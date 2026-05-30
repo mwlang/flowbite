@@ -33,21 +33,31 @@ any component class or public API:
 - `src/dom/idempotency.ts` (new) — `markBoundTo(element, kind, owner)` helper.
   Uses a module-scoped `WeakMap<Element, { [kind: string]: object }>`. Auto-cleans
   when elements are GC'd.
+- `src/components/modal/index.ts` — instance-creation guard + 3 trigger-binding
+  guards (`modal-toggle`, `modal-show`, `modal-hide`).
+- `src/components/drawer/index.ts` — instance-creation guard + 3 trigger-binding
+  guards (`drawer-toggle`, `drawer-show`, `drawer-hide`).
+- `src/components/dropdown/index.ts` — `markBoundTo` per `(trigger, panel)`
+  pair, preserving the existing multi-trigger semantics.
+- `src/components/collapse/index.ts` — `markBoundTo` per `(trigger, target)`
+  pair. Fixes a pre-existing random-suffix-id leak where the multi-trigger
+  fallback path created a fresh `Collapse` on every re-init.
+- `src/components/carousel/index.ts` — instance-creation guard. The prev/next
+  external button listeners further down `initCarousels()` are reachable only
+  when a new `Carousel` is constructed, so the top-level guard also dedupes
+  their attachment.
 - `src/components/accordion/index.ts` — instance-creation guard.
-- `src/components/carousel/index.ts` — same.
-- `src/components/clipboard/index.ts` — same.
-- `src/components/collapse/index.ts` — instance-creation guard + trigger-binding
-  guard. Fixes pre-existing random-suffix-ID stacking bug.
-- `src/components/datepicker/index.ts` — same.
-- `src/components/dial/index.ts` — same.
 - `src/components/dismiss/index.ts` — same.
-- `src/components/drawer/index.ts` — instance + 3 trigger guards (toggle/show/hide).
-- `src/components/dropdown/index.ts` — same.
-- `src/components/input-counter/index.ts` — same.
-- `src/components/modal/index.ts` — instance + 3 trigger guards (toggle/show/hide).
-- `src/components/popover/index.ts` — instance + trigger guards.
+- `src/components/dial/index.ts` — same.
 - `src/components/tabs/index.ts` — same.
-- `src/components/tooltip/index.ts` — instance + trigger guards.
+- `src/components/datepicker/index.ts` — same.
+- `src/components/popover/index.ts` — same (constructor handles its own
+  event binding via `_setupEventListeners`, so the instance-creation guard
+  alone is sufficient).
+- `src/components/tooltip/index.ts` — same.
+
+`src/components/input-counter/index.ts` and `src/components/clipboard/index.ts`
+already had `instanceExists` guards in tree and are unchanged in this PR.
 
 ## Backward compatibility
 
