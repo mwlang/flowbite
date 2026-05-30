@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flowbite Hotwire/Stimulus fork — Turbo lifecycle smoke test</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body { font-family: system-ui, sans-serif; }
+    .test-log { font-family: ui-monospace, monospace; font-size: 13px; }
+    .test-pass { color: #16a34a; }
+    .test-fail { color: #dc2626; }
+    .test-info { color: #64748b; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900 p-6">
+
+<header class="mb-6">
+    <h1 class="text-2xl font-bold mb-1">Flowbite Hotwire/Stimulus fork — smoke test</h1>
+    <p class="text-sm text-slate-600">
+        Exercises the three-layer fix (idempotency, scoping, AutoInit) against
+        the lifecycle scenarios reported in #796, #1042, #1055, #998, #1102, #1123.
+        Each scenario auto-runs and reports below; click the buttons to repeat manually.
+    </p>
+</header>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+<!-- LEFT: live components -->
+<section class="bg-white rounded-lg shadow p-4">
+    <h2 class="text-lg font-semibold mb-3">Live components</h2>
+
+    <!-- Modal -->
+    <div class="mb-4 pb-3 border-b border-slate-200">
+        <h3 class="font-medium text-sm mb-2 text-slate-700">Modal</h3>
+        <button data-modal-target="smoke-modal" data-modal-toggle="smoke-modal"
+                class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm">
+            Open modal
+        </button>
+        <div id="smoke-modal" class="hidden fixed inset-0 z-50 items-center justify-center">
+            <div class="bg-white rounded-lg shadow-xl p-6 max-w-md">
+                <h3 class="font-bold mb-2">Smoke modal</h3>
+                <p class="mb-4 text-sm">If you can read this and it stays visible while the
+                    automated tests run below, idempotency is working.</p>
+                <button data-modal-hide="smoke-modal"
+                        class="bg-slate-200 px-3 py-1.5 rounded text-sm">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dropdown -->
+    <div class="mb-4 pb-3 border-b border-slate-200">
+        <h3 class="font-medium text-sm mb-2 text-slate-700">Dropdown</h3>
+        <button id="smoke-dropdown-trigger" data-dropdown-toggle="smoke-dropdown"
+                class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm">
+            Open dropdown
+        </button>
+        <div id="smoke-dropdown" class="z-10 hidden bg-white rounded shadow w-44 mt-1 border border-slate-200">
+            <ul class="text-sm text-slate-700 py-2">
+                <li><a href="#" class="block px-4 py-2 hover:bg-slate-100">Item one</a></li>
+                <li><a href="#" class="block px-4 py-2 hover:bg-slate-100">Item two</a></li>
+                <li><a href="#" class="block px-4 py-2 hover:bg-slate-100">Item three</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Drawer -->
+    <div class="mb-4 pb-3 border-b border-slate-200">
+        <h3 class="font-medium text-sm mb-2 text-slate-700">Drawer</h3>
+        <button data-drawer-target="smoke-drawer" data-drawer-toggle="smoke-drawer"
+                class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm">
+            Open drawer
+        </button>
+        <div id="smoke-drawer"
+             class="fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto bg-white w-64 -translate-x-full transition-transform">
+            <h3 class="font-bold mb-2">Smoke drawer</h3>
+            <button data-drawer-hide="smoke-drawer"
+                    class="bg-slate-200 px-3 py-1.5 rounded text-sm">Close drawer</button>
+        </div>
+    </div>
+
+    <!-- Dynamic injection zone -->
+    <div>
+        <h3 class="font-medium text-sm mb-2 text-slate-700">Dynamic injection zone</h3>
+        <div id="injection-zone" class="border-2 border-dashed border-slate-300 rounded p-3 min-h-[80px] text-sm">
+            <span class="text-slate-400">(components will be inserted / removed here by tests)</span>
+        </div>
+    </div>
+</section>
+
+<!-- RIGHT: tests + manual controls -->
+<section class="bg-white rounded-lg shadow p-4">
+    <h2 class="text-lg font-semibold mb-3">Tests &amp; manual triggers</h2>
+
+    <div class="space-y-2 mb-4">
+        <button id="btn-run-all" class="bg-emerald-600 text-white px-3 py-1.5 rounded text-sm w-full">
+            Run all tests
+        </button>
+        <button id="btn-reinit" class="bg-slate-700 text-white px-3 py-1.5 rounded text-sm w-full">
+            Manual: call window.initFlowbite()
+        </button>
+        <button id="btn-inject" class="bg-slate-700 text-white px-3 py-1.5 rounded text-sm w-full">
+            Manual: inject a modal+trigger into the zone
+        </button>
+        <button id="btn-remove" class="bg-slate-700 text-white px-3 py-1.5 rounded text-sm w-full">
+            Manual: empty the injection zone
+        </button>
+        <button id="btn-replace" class="bg-slate-700 text-white px-3 py-1.5 rounded text-sm w-full">
+            Manual: replaceChildren on injection zone
+        </button>
+    </div>
+
+    <div id="test-log" class="test-log bg-slate-900 text-slate-100 rounded p-3 min-h-[300px] max-h-[480px] overflow-y-auto">
+        <div class="test-info">Loading bundle...</div>
+    </div>
+</section>
+
+</div>
+
+<script src="./flowbite.turbo.bundle.js"></script>
+<script>
+const log = document.getElementById('test-log');
+function logLine(text, cls) {
+    const el = document.createElement('div');
+    el.className = cls || 'test-info';
+    el.textContent = '[' + new Date().toISOString().slice(11, 23) + '] ' + text;
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;
+}
+function pass(name) { logLine('PASS  ' + name, 'test-pass'); }
+function fail(name, detail) { logLine('FAIL  ' + name + (detail ? '  — ' + detail : ''), 'test-fail'); }
+function info(text) { logLine(text); }
+
+function getInstanceCount(type) {
+    if (!window.FlowbiteInstances) return -1;
+    const all = window.FlowbiteInstances.getAllInstances();
+    return Object.keys(all[type] || {}).length;
+}
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ------- TESTS -------
+
+async function test_idempotentInit() {
+    info('Test: idempotent initFlowbite() — re-running should NOT recreate instances');
+    const before = getInstanceCount('Modal');
+    if (before === 0) return fail('idempotent-init', 'no modal registered to start');
+
+    // Capture the actual instance ref to detect rebuild
+    const modalRef = window.FlowbiteInstances.getInstance('Modal', 'smoke-modal');
+
+    window.initFlowbite();
+    window.initFlowbite();
+    window.initFlowbite();
+
+    const after = getInstanceCount('Modal');
+    const modalRefAfter = window.FlowbiteInstances.getInstance('Modal', 'smoke-modal');
+
+    if (after === before && modalRef === modalRefAfter) {
+        pass('idempotent-init: instance count unchanged, same Modal reference (' + before + ' modals)');
+    } else {
+        fail('idempotent-init', 'before=' + before + ' after=' + after + ' sameRef=' + (modalRef === modalRefAfter));
+    }
+}
+
+async function test_zombieModalFix() {
+    info('Test: open modal + initFlowbite() — modal should stay visible (#1042)');
+    const modal = window.FlowbiteInstances.getInstance('Modal', 'smoke-modal');
+    if (!modal) return fail('zombie-modal-fix', 'no modal instance');
+
+    modal.show();
+    await wait(50);
+    if (!modal.isVisible()) return fail('zombie-modal-fix', 'modal did not open');
+
+    window.initFlowbite();
+    await wait(50);
+
+    const stillSame = window.FlowbiteInstances.getInstance('Modal', 'smoke-modal') === modal;
+    const stillVisible = modal.isVisible();
+    if (stillSame && stillVisible) {
+        pass('zombie-modal-fix: modal still visible and same instance after initFlowbite()');
+    } else {
+        fail('zombie-modal-fix', 'sameInstance=' + stillSame + ' stillVisible=' + stillVisible);
+    }
+    modal.hide();
+    await wait(50);
+}
+
+async function test_clickListenerStacking() {
+    info('Test: initFlowbite() N times — dropdown trigger should fire ONE toggle per click');
+    const trigger = document.getElementById('smoke-dropdown-trigger');
+    const dropdown = window.FlowbiteInstances.getInstance('Dropdown', 'smoke-dropdown');
+    if (!dropdown) return fail('stacking', 'no dropdown instance');
+
+    // Run initFlowbite 5 times — each previous-broken-attempt would add a listener.
+    for (let i = 0; i < 5; i++) window.initFlowbite();
+    await wait(20);
+
+    // Track toggle calls
+    let toggleCount = 0;
+    const origToggle = dropdown.toggle.bind(dropdown);
+    dropdown.toggle = function () { toggleCount++; return origToggle(); };
+
+    trigger.click();
+    await wait(50);
+
+    dropdown.toggle = origToggle; // restore
+    if (toggleCount === 1) {
+        pass('stacking: exactly one toggle fired per click after 5x initFlowbite()');
+    } else {
+        fail('stacking', 'toggle fired ' + toggleCount + ' times instead of 1');
+    }
+    // Close dropdown again
+    if (dropdown.isVisible && dropdown.isVisible()) origToggle();
+    await wait(50);
+}
+
+async function test_autoInitOnInjection() {
+    info('Test: inject modal markup — AutoInit should register it automatically');
+    const zone = document.getElementById('injection-zone');
+    const before = getInstanceCount('Modal');
+
+    zone.innerHTML = ''
+        + '<button data-modal-target="injected-modal" data-modal-toggle="injected-modal"'
+        + '        class="bg-purple-600 text-white px-3 py-1.5 rounded text-sm">Open injected modal</button>'
+        + '<div id="injected-modal" class="hidden fixed inset-0 z-50 items-center justify-center">'
+        + '  <div class="bg-white rounded-lg shadow-xl p-6 max-w-md">'
+        + '    <h3 class="font-bold mb-2">Injected modal</h3>'
+        + '    <button data-modal-hide="injected-modal" class="bg-slate-200 px-3 py-1.5 rounded text-sm">Close</button>'
+        + '  </div>'
+        + '</div>';
+
+    // Give MutationObserver a chance to fire (microtask + tick)
+    await wait(50);
+
+    const after = getInstanceCount('Modal');
+    const injectedRegistered = window.FlowbiteInstances.instanceExists('Modal', 'injected-modal');
+
+    if (injectedRegistered && after === before + 1) {
+        pass('auto-init-injection: injected modal auto-registered (count ' + before + ' -> ' + after + ')');
+    } else {
+        fail('auto-init-injection', 'registered=' + injectedRegistered + ' before=' + before + ' after=' + after);
+    }
+}
+
+async function test_autoTeardownOnRemoval() {
+    info('Test: remove injected modal — AutoInit should tear down the instance');
+    const zone = document.getElementById('injection-zone');
+    const before = getInstanceCount('Modal');
+    if (!window.FlowbiteInstances.instanceExists('Modal', 'injected-modal')) {
+        return fail('auto-teardown', 'precondition: no injected modal registered');
+    }
+
+    zone.innerHTML = '<span class="text-slate-400">(emptied)</span>';
+    await wait(50);
+
+    const after = getInstanceCount('Modal');
+    const stillRegistered = window.FlowbiteInstances.instanceExists('Modal', 'injected-modal');
+    if (!stillRegistered && after === before - 1) {
+        pass('auto-teardown: injected modal cleanly removed (count ' + before + ' -> ' + after + ')');
+    } else {
+        fail('auto-teardown', 'stillRegistered=' + stillRegistered + ' before=' + before + ' after=' + after);
+    }
+}
+
+async function test_replaceChildren() {
+    info('Test: replaceChildren on a zone with a modal — old torn down + new initialized in one batch');
+    const zone = document.getElementById('injection-zone');
+
+    // First inject a v1 modal
+    zone.innerHTML = '<div id="replaced-modal" class="hidden"></div>'
+        + '<button data-modal-target="replaced-modal" data-modal-toggle="replaced-modal">v1</button>';
+    await wait(50);
+    const v1Ref = window.FlowbiteInstances.getInstance('Modal', 'replaced-modal');
+    if (!v1Ref) return fail('replace-children', 'v1 modal did not register');
+
+    // Now replace the entire zone with a fresh modal of the same id
+    const newRoot = document.createElement('div');
+    newRoot.innerHTML = '<div id="replaced-modal" class="hidden"></div>'
+        + '<button data-modal-target="replaced-modal" data-modal-toggle="replaced-modal">v2</button>';
+    zone.replaceChildren(...newRoot.childNodes);
+    await wait(80); // morph-style mutations can require an extra tick
+
+    const v2Ref = window.FlowbiteInstances.getInstance('Modal', 'replaced-modal');
+    if (v2Ref && v2Ref !== v1Ref) {
+        pass('replace-children: v1 torn down, v2 fresh instance registered');
+    } else {
+        fail('replace-children', 'v2 missing or same as v1: v2=' + (!!v2Ref) + ' same=' + (v2Ref === v1Ref));
+    }
+
+    // cleanup
+    zone.innerHTML = '<span class="text-slate-400">(emptied)</span>';
+    await wait(50);
+}
+
+async function runAll() {
+    log.innerHTML = '';
+    info('Running smoke tests against ' + (window.Flowbite ? 'Flowbite (fork)' : 'NO BUNDLE LOADED'));
+    info('AutoInit observer is on: ' + (typeof window.startAutoInit === 'function'));
+    info('FlowbiteInstances available: ' + (typeof window.FlowbiteInstances === 'object'));
+    info('---');
+    await test_idempotentInit();
+    await test_zombieModalFix();
+    await test_clickListenerStacking();
+    await test_autoInitOnInjection();
+    await test_autoTeardownOnRemoval();
+    await test_replaceChildren();
+    info('---');
+    info('Done. Open modal/dropdown/drawer manually to verify they remain interactive.');
+}
+
+document.getElementById('btn-run-all').addEventListener('click', runAll);
+document.getElementById('btn-reinit').addEventListener('click', () => {
+    window.initFlowbite();
+    info('Called window.initFlowbite() — instance counts: Modal=' + getInstanceCount('Modal')
+        + ' Dropdown=' + getInstanceCount('Dropdown') + ' Drawer=' + getInstanceCount('Drawer'));
+});
+document.getElementById('btn-inject').addEventListener('click', () => {
+    const zone = document.getElementById('injection-zone');
+    zone.innerHTML = ''
+        + '<button data-modal-target="manual-modal" data-modal-toggle="manual-modal" class="bg-purple-600 text-white px-3 py-1.5 rounded text-sm">Open manual modal</button>'
+        + '<div id="manual-modal" class="hidden fixed inset-0 z-50 items-center justify-center">'
+        + '  <div class="bg-white rounded-lg shadow-xl p-6 max-w-md"><h3>Manual modal</h3>'
+        + '    <button data-modal-hide="manual-modal" class="bg-slate-200 px-3 py-1.5 rounded text-sm mt-2">Close</button></div></div>';
+    info('Injected manual-modal — instances: Modal=' + getInstanceCount('Modal'));
+});
+document.getElementById('btn-remove').addEventListener('click', () => {
+    document.getElementById('injection-zone').innerHTML = '<span class="text-slate-400">(emptied)</span>';
+    setTimeout(() => info('Zone emptied — instances: Modal=' + getInstanceCount('Modal')), 50);
+});
+document.getElementById('btn-replace').addEventListener('click', () => {
+    const zone = document.getElementById('injection-zone');
+    const fresh = document.createElement('div');
+    fresh.innerHTML = '<span class="text-blue-500">Replaced content @ ' + new Date().toLocaleTimeString() + '</span>';
+    zone.replaceChildren(...fresh.childNodes);
+    setTimeout(() => info('Zone replaceChildren — instances: Modal=' + getInstanceCount('Modal')), 50);
+});
+
+// Auto-run once everything is settled
+window.addEventListener('load', () => setTimeout(runAll, 200));
+</script>
+</body>
+</html>

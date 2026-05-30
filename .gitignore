@@ -11,3 +11,5 @@ static/*.map
 yarn-error.log
 /.idea
 .hugo_build.lock
+examples/flowbite.turbo.bundle.js
+examples/flowbite.turbo.bundle.js.map
