@@ -308,8 +308,15 @@ class Carousel implements CarouselInterface {
     }
 }
 
-export function initCarousels() {
-    document.querySelectorAll('[data-carousel]').forEach(($carouselEl) => {
+export function initCarousels(root: ParentNode = document) {
+    root.querySelectorAll('[data-carousel]').forEach(($carouselEl) => {
+        // idempotency: skip if a Carousel is already registered for this
+        // element. The constructor's override:true would otherwise tear
+        // down and rebuild on every re-init, restarting the cycle and
+        // stacking duplicate click handlers on prev/next buttons (#796).
+        if (instances.instanceExists('Carousel', $carouselEl.id)) {
+            return;
+        }
         const interval = $carouselEl.getAttribute('data-carousel-interval');
         const slide =
             $carouselEl.getAttribute('data-carousel') === 'slide'
@@ -383,6 +390,10 @@ export function initCarousels() {
         }
     });
 }
+
+// (Note: the prev/next external button listeners above are reachable only
+// when a new Carousel is constructed — the instance-exists guard at the top
+// of initCarousels ensures they bind exactly once per element.)
 
 if (typeof window !== 'undefined') {
     window.Carousel = Carousel;

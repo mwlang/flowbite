@@ -3,6 +3,7 @@ import type { DrawerOptions, PlacementClasses } from './types';
 import type { InstanceOptions, EventListenerInstance } from '../../dom/types';
 import { DrawerInterface } from './interface';
 import instances from '../../dom/instances';
+import { markBoundTo } from '../../dom/idempotency';
 
 const Default: DrawerOptions = {
     placement: 'left',
@@ -313,13 +314,19 @@ class Drawer implements DrawerInterface {
     }
 }
 
-export function initDrawers() {
-    document.querySelectorAll('[data-drawer-target]').forEach(($triggerEl) => {
+export function initDrawers(root: ParentNode = document) {
+    root.querySelectorAll('[data-drawer-target]').forEach(($triggerEl) => {
         // mandatory
         const drawerId = $triggerEl.getAttribute('data-drawer-target');
         const $drawerEl = document.getElementById(drawerId);
 
         if ($drawerEl) {
+            // idempotency: skip if a Drawer is already registered for this
+            // target. The constructor's override:true would otherwise tear
+            // down and rebuild on every re-init (#796, #1042).
+            if (instances.instanceExists('Drawer', $drawerEl.id)) {
+                return;
+            }
             const placement = $triggerEl.getAttribute('data-drawer-placement');
             const bodyScrolling = $triggerEl.getAttribute(
                 'data-drawer-body-scrolling'
@@ -352,7 +359,7 @@ export function initDrawers() {
         }
     });
 
-    document.querySelectorAll('[data-drawer-toggle]').forEach(($triggerEl) => {
+    root.querySelectorAll('[data-drawer-toggle]').forEach(($triggerEl) => {
         const drawerId = $triggerEl.getAttribute('data-drawer-toggle');
         const $drawerEl = document.getElementById(drawerId);
 
@@ -363,6 +370,7 @@ export function initDrawers() {
             );
 
             if (drawer) {
+                if (!markBoundTo($triggerEl, 'drawer-toggle', drawer)) return;
                 const toggleDrawer = () => {
                     drawer.toggle();
                 };
@@ -384,9 +392,8 @@ export function initDrawers() {
         }
     });
 
-    document
-        .querySelectorAll('[data-drawer-dismiss], [data-drawer-hide]')
-        .forEach(($triggerEl) => {
+    root.querySelectorAll('[data-drawer-dismiss], [data-drawer-hide]').forEach(
+        ($triggerEl) => {
             const drawerId = $triggerEl.getAttribute('data-drawer-dismiss')
                 ? $triggerEl.getAttribute('data-drawer-dismiss')
                 : $triggerEl.getAttribute('data-drawer-hide');
@@ -399,6 +406,7 @@ export function initDrawers() {
                 );
 
                 if (drawer) {
+                    if (!markBoundTo($triggerEl, 'drawer-hide', drawer)) return;
                     const hideDrawer = () => {
                         drawer.hide();
                     };
@@ -418,9 +426,10 @@ export function initDrawers() {
                     `Drawer with id ${drawerId} not found. Are you sure that the data-drawer-target attribute points to the correct drawer id`
                 );
             }
-        });
+        }
+    );
 
-    document.querySelectorAll('[data-drawer-show]').forEach(($triggerEl) => {
+    root.querySelectorAll('[data-drawer-show]').forEach(($triggerEl) => {
         const drawerId = $triggerEl.getAttribute('data-drawer-show');
         const $drawerEl = document.getElementById(drawerId);
 
@@ -431,6 +440,7 @@ export function initDrawers() {
             );
 
             if (drawer) {
+                if (!markBoundTo($triggerEl, 'drawer-show', drawer)) return;
                 const showDrawer = () => {
                     drawer.show();
                 };

@@ -14,33 +14,46 @@ import InputCounter from './components/input-counter';
 import CopyClipboard from './components/clipboard';
 import Datepicker from './components/datepicker';
 import { initFlowbite } from './components/index';
+import { startAutoInit, stopAutoInit } from './dom/auto-init';
 import Events from './dom/events';
 
-// Since turbo maintainers refuse to add this event, we'll add it ourselves
-// https://discuss.hotwired.dev/t/event-to-know-a-turbo-stream-has-been-rendered/1554/10
-const afterRenderEvent = new Event('turbo:after-stream-render');
-addEventListener('turbo:before-stream-render', (event: CustomEvent) => {
-    const originalRender = event.detail.render;
+/**
+ * Turbo / SPA-friendly entry point.
+ *
+ * The previous strategy attached four event listeners (`turbo:load`,
+ * `turbo:frame-load`, `turbo:render`, `turbo:after-stream-render`) and
+ * re-ran `initFlowbite()` on the whole document for every event. That
+ * was both over-eager (re-initializing components in unchanged DOM,
+ * dropping mid-interaction state — see #1042) and under-reaching (DOM
+ * injected outside Turbo's lifecycle was never picked up — see #1123).
+ *
+ * The new strategy: a single `MutationObserver` on `document.body`
+ * (`startAutoInit`) detects every DOM mutation and tears down /
+ * initializes components in the affected subtrees only. Framework-
+ * agnostic — also handles Phoenix LiveView, Next.js navigations,
+ * vanilla innerHTML, etc.
+ *
+ * `initFlowbite()` still runs once at startup for components present
+ * in the initial server-rendered HTML.
+ *
+ * Issue references: #796, #1042, #1055, #998, #1102, #1111, #1123,
+ * #986, #1051.
+ */
 
-    event.detail.render = function (streamElement: Element) {
-        originalRender(streamElement);
-        window.dispatchEvent(afterRenderEvent);
-    };
-});
+const start = () => {
+    initFlowbite();
+    startAutoInit(document.body);
+};
 
-const turboLoadEvents = new Events('turbo:load', [initFlowbite]);
-turboLoadEvents.init();
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', start, { once: true });
+    } else {
+        start();
+    }
+}
 
-const turboFrameLoadEvents = new Events('turbo:frame-load', [initFlowbite]);
-turboFrameLoadEvents.init();
-
-const turboStreamLoadEvents = new Events('turbo:after-stream-render', [
-    initFlowbite,
-]);
-turboStreamLoadEvents.init();
-
-const turboRenderEvents = new Events('turbo:render', [initFlowbite]);
-turboRenderEvents.init();
+export { startAutoInit, stopAutoInit };
 
 export default {
     Accordion,

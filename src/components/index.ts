@@ -13,21 +13,21 @@ import { initTabs } from './tabs';
 import { initTooltips } from './tooltip';
 import { initDatepickers } from './datepicker';
 
-export function initFlowbite() {
-    initAccordions();
-    initCollapses();
-    initCarousels();
-    initDismisses();
-    initDropdowns();
-    initModals();
-    initDrawers();
-    initTabs();
-    initTooltips();
-    initPopovers();
-    initDials();
-    initInputCounters();
-    initCopyClipboards();
-    initDatepickers();
+export function initFlowbite(root: ParentNode = document) {
+    initAccordions(root);
+    initCollapses(root);
+    initCarousels(root);
+    initDismisses(root);
+    initDropdowns(root);
+    initModals(root);
+    initDrawers(root);
+    initTabs(root);
+    initTooltips(root);
+    initPopovers(root);
+    initDials(root);
+    initInputCounters(root);
+    initCopyClipboards(root);
+    initDatepickers(root);
 }
 
 if (typeof window !== 'undefined') {

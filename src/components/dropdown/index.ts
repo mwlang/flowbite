@@ -8,6 +8,7 @@ import type { DropdownOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { DropdownInterface } from './interface';
 import instances from '../../dom/instances';
+import { markBoundTo } from '../../dom/idempotency';
 
 const Default: DropdownOptions = {
     placement: 'bottom',
@@ -333,57 +334,64 @@ class Dropdown implements DropdownInterface {
     }
 }
 
-export function initDropdowns() {
-    document
-        .querySelectorAll('[data-dropdown-toggle]')
-        .forEach(($triggerEl) => {
-            const dropdownId = $triggerEl.getAttribute('data-dropdown-toggle');
-            const $dropdownEl = document.getElementById(dropdownId);
+export function initDropdowns(root: ParentNode = document) {
+    root.querySelectorAll('[data-dropdown-toggle]').forEach(($triggerEl) => {
+        const dropdownId = $triggerEl.getAttribute('data-dropdown-toggle');
+        const $dropdownEl = document.getElementById(dropdownId);
 
-            if ($dropdownEl) {
-                const placement = $triggerEl.getAttribute(
-                    'data-dropdown-placement'
-                );
-                const offsetSkidding = $triggerEl.getAttribute(
-                    'data-dropdown-offset-skidding'
-                );
-                const offsetDistance = $triggerEl.getAttribute(
-                    'data-dropdown-offset-distance'
-                );
-                const triggerType = $triggerEl.getAttribute(
-                    'data-dropdown-trigger'
-                );
-                const delay = $triggerEl.getAttribute('data-dropdown-delay');
-                const ignoreClickOutsideClass = $triggerEl.getAttribute(
-                    'data-dropdown-ignore-click-outside-class'
-                );
-
-                new Dropdown(
-                    $dropdownEl as HTMLElement,
-                    $triggerEl as HTMLElement,
-                    {
-                        placement: placement ? placement : Default.placement,
-                        triggerType: triggerType
-                            ? triggerType
-                            : Default.triggerType,
-                        offsetSkidding: offsetSkidding
-                            ? parseInt(offsetSkidding)
-                            : Default.offsetSkidding,
-                        offsetDistance: offsetDistance
-                            ? parseInt(offsetDistance)
-                            : Default.offsetDistance,
-                        delay: delay ? parseInt(delay) : Default.delay,
-                        ignoreClickOutsideClass: ignoreClickOutsideClass
-                            ? ignoreClickOutsideClass
-                            : Default.ignoreClickOutsideClass,
-                    } as DropdownOptions
-                );
-            } else {
-                console.error(
-                    `The dropdown element with id "${dropdownId}" does not exist. Please check the data-dropdown-toggle attribute.`
-                );
+        if ($dropdownEl) {
+            // idempotency: each (trigger, panel) pair is bound at most
+            // once. markBoundTo uses owner-aware comparison against the
+            // panel element, so re-runs against unchanged DOM are no-ops
+            // while still allowing multiple distinct triggers to drive
+            // the same panel (current "last trigger wins" semantics
+            // preserved within a single init pass via override:true).
+            if (!markBoundTo($triggerEl, 'dropdown-toggle', $dropdownEl)) {
+                return;
             }
-        });
+            const placement = $triggerEl.getAttribute(
+                'data-dropdown-placement'
+            );
+            const offsetSkidding = $triggerEl.getAttribute(
+                'data-dropdown-offset-skidding'
+            );
+            const offsetDistance = $triggerEl.getAttribute(
+                'data-dropdown-offset-distance'
+            );
+            const triggerType = $triggerEl.getAttribute(
+                'data-dropdown-trigger'
+            );
+            const delay = $triggerEl.getAttribute('data-dropdown-delay');
+            const ignoreClickOutsideClass = $triggerEl.getAttribute(
+                'data-dropdown-ignore-click-outside-class'
+            );
+
+            new Dropdown(
+                $dropdownEl as HTMLElement,
+                $triggerEl as HTMLElement,
+                {
+                    placement: placement ? placement : Default.placement,
+                    triggerType: triggerType
+                        ? triggerType
+                        : Default.triggerType,
+                    offsetSkidding: offsetSkidding
+                        ? parseInt(offsetSkidding)
+                        : Default.offsetSkidding,
+                    offsetDistance: offsetDistance
+                        ? parseInt(offsetDistance)
+                        : Default.offsetDistance,
+                    delay: delay ? parseInt(delay) : Default.delay,
+                    ignoreClickOutsideClass: ignoreClickOutsideClass
+                        ? ignoreClickOutsideClass
+                        : Default.ignoreClickOutsideClass,
+                } as DropdownOptions
+            );
+        } else {
+            console.error(
+                `The dropdown element with id "${dropdownId}" does not exist. Please check the data-dropdown-toggle attribute.`
+            );
+        }
+    });
 }
 
 if (typeof window !== 'undefined') {

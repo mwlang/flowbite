@@ -18,21 +18,23 @@ import Datepicker, { initDatepickers } from './components/datepicker';
 import './components/index';
 import Events from './dom/events';
 
+// Wrap each init in a thunk so the load Event isn't passed positionally
+// as the new optional `root` parameter (would break querySelectorAll at runtime).
 const events = new Events('load', [
-    initAccordions,
-    initCollapses,
-    initCarousels,
-    initDismisses,
-    initDropdowns,
-    initModals,
-    initDrawers,
-    initTabs,
-    initTooltips,
-    initPopovers,
-    initDials,
-    initCopyClipboards,
-    initInputCounters,
-    initDatepickers,
+    () => initAccordions(),
+    () => initCollapses(),
+    () => initCarousels(),
+    () => initDismisses(),
+    () => initDropdowns(),
+    () => initModals(),
+    () => initDrawers(),
+    () => initTabs(),
+    () => initTooltips(),
+    () => initPopovers(),
+    () => initDials(),
+    () => initCopyClipboards(),
+    () => initInputCounters(),
+    () => initDatepickers(),
 ]);
 events.init();
 
