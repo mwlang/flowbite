@@ -45,5 +45,7 @@ declare global {
         initDatepickers: (root?: ParentNode) => void;
         initFlowbite: (root?: ParentNode) => void;
         FlowbiteInstances: any;
+        startAutoInit: (root?: ParentNode) => void;
+        stopAutoInit: () => void;
     }
 }
