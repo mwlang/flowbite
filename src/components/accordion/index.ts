@@ -185,8 +185,8 @@ class Accordion implements AccordionInterface {
     }
 }
 
-export function initAccordions() {
-    document.querySelectorAll('[data-accordion]').forEach(($accordionEl) => {
+export function initAccordions(root: ParentNode = document) {
+    root.querySelectorAll('[data-accordion]').forEach(($accordionEl) => {
         // idempotency: skip if this accordion is already registered. Without
         // this, re-running initAccordions() in a Turbo context tears down the
         // existing instance (override:true default) and silently loses any

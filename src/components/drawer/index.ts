@@ -314,8 +314,8 @@ class Drawer implements DrawerInterface {
     }
 }
 
-export function initDrawers() {
-    document.querySelectorAll('[data-drawer-target]').forEach(($triggerEl) => {
+export function initDrawers(root: ParentNode = document) {
+    root.querySelectorAll('[data-drawer-target]').forEach(($triggerEl) => {
         // mandatory
         const drawerId = $triggerEl.getAttribute('data-drawer-target');
         const $drawerEl = document.getElementById(drawerId);
@@ -359,7 +359,7 @@ export function initDrawers() {
         }
     });
 
-    document.querySelectorAll('[data-drawer-toggle]').forEach(($triggerEl) => {
+    root.querySelectorAll('[data-drawer-toggle]').forEach(($triggerEl) => {
         const drawerId = $triggerEl.getAttribute('data-drawer-toggle');
         const $drawerEl = document.getElementById(drawerId);
 
@@ -392,9 +392,8 @@ export function initDrawers() {
         }
     });
 
-    document
-        .querySelectorAll('[data-drawer-dismiss], [data-drawer-hide]')
-        .forEach(($triggerEl) => {
+    root.querySelectorAll('[data-drawer-dismiss], [data-drawer-hide]').forEach(
+        ($triggerEl) => {
             const drawerId = $triggerEl.getAttribute('data-drawer-dismiss')
                 ? $triggerEl.getAttribute('data-drawer-dismiss')
                 : $triggerEl.getAttribute('data-drawer-hide');
@@ -427,9 +426,10 @@ export function initDrawers() {
                     `Drawer with id ${drawerId} not found. Are you sure that the data-drawer-target attribute points to the correct drawer id`
                 );
             }
-        });
+        }
+    );
 
-    document.querySelectorAll('[data-drawer-show]').forEach(($triggerEl) => {
+    root.querySelectorAll('[data-drawer-show]').forEach(($triggerEl) => {
         const drawerId = $triggerEl.getAttribute('data-drawer-show');
         const $drawerEl = document.getElementById(drawerId);
 

@@ -28,18 +28,22 @@ addEventListener('turbo:before-stream-render', (event: CustomEvent) => {
     };
 });
 
-const turboLoadEvents = new Events('turbo:load', [initFlowbite]);
+// Wrap initFlowbite in a thunk so the Turbo Event isn't passed positionally
+// as the new optional `root` parameter (would break querySelectorAll at runtime).
+const turboLoadEvents = new Events('turbo:load', [() => initFlowbite()]);
 turboLoadEvents.init();
 
-const turboFrameLoadEvents = new Events('turbo:frame-load', [initFlowbite]);
+const turboFrameLoadEvents = new Events('turbo:frame-load', [
+    () => initFlowbite(),
+]);
 turboFrameLoadEvents.init();
 
 const turboStreamLoadEvents = new Events('turbo:after-stream-render', [
-    initFlowbite,
+    () => initFlowbite(),
 ]);
 turboStreamLoadEvents.init();
 
-const turboRenderEvents = new Events('turbo:render', [initFlowbite]);
+const turboRenderEvents = new Events('turbo:render', [() => initFlowbite()]);
 turboRenderEvents.init();
 
 export default {

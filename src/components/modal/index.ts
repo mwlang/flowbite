@@ -279,9 +279,9 @@ class Modal implements ModalInterface {
     }
 }
 
-export function initModals() {
+export function initModals(root: ParentNode = document) {
     // initiate modal based on data-modal-target
-    document.querySelectorAll('[data-modal-target]').forEach(($triggerEl) => {
+    root.querySelectorAll('[data-modal-target]').forEach(($triggerEl) => {
         const modalId = $triggerEl.getAttribute('data-modal-target');
         const $modalEl = document.getElementById(modalId);
 
@@ -310,7 +310,7 @@ export function initModals() {
     });
 
     // toggle modal visibility
-    document.querySelectorAll('[data-modal-toggle]').forEach(($triggerEl) => {
+    root.querySelectorAll('[data-modal-toggle]').forEach(($triggerEl) => {
         const modalId = $triggerEl.getAttribute('data-modal-toggle');
         const $modalEl = document.getElementById(modalId);
 
@@ -344,7 +344,7 @@ export function initModals() {
     });
 
     // show modal on click if exists based on id
-    document.querySelectorAll('[data-modal-show]').forEach(($triggerEl) => {
+    root.querySelectorAll('[data-modal-show]').forEach(($triggerEl) => {
         const modalId = $triggerEl.getAttribute('data-modal-show');
         const $modalEl = document.getElementById(modalId);
 
@@ -378,7 +378,7 @@ export function initModals() {
     });
 
     // hide modal on click if exists based on id
-    document.querySelectorAll('[data-modal-hide]').forEach(($triggerEl) => {
+    root.querySelectorAll('[data-modal-hide]').forEach(($triggerEl) => {
         const modalId = $triggerEl.getAttribute('data-modal-hide');
         const $modalEl = document.getElementById(modalId);
 

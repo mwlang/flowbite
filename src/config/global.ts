@@ -29,21 +29,21 @@ declare global {
         InputCounter: typeof InputCounter;
         CopyClipboard: typeof Clipboard;
         Datepicker: typeof Datepicker;
-        initAccordions: () => void;
-        initCarousels: () => void;
-        initCollapses: () => void;
-        initDials: () => void;
-        initDismisses: () => void;
-        initDrawers: () => void;
-        initDropdowns: () => void;
-        initModals: () => void;
-        initPopovers: () => void;
-        initTabs: () => void;
-        initTooltips: () => void;
-        initInputCounters: () => void;
-        initClipboards: () => void;
-        initDatepickers: () => void;
-        initFlowbite: () => void;
+        initAccordions: (root?: ParentNode) => void;
+        initCarousels: (root?: ParentNode) => void;
+        initCollapses: (root?: ParentNode) => void;
+        initDials: (root?: ParentNode) => void;
+        initDismisses: (root?: ParentNode) => void;
+        initDrawers: (root?: ParentNode) => void;
+        initDropdowns: (root?: ParentNode) => void;
+        initModals: (root?: ParentNode) => void;
+        initPopovers: (root?: ParentNode) => void;
+        initTabs: (root?: ParentNode) => void;
+        initTooltips: (root?: ParentNode) => void;
+        initInputCounters: (root?: ParentNode) => void;
+        initClipboards: (root?: ParentNode) => void;
+        initDatepickers: (root?: ParentNode) => void;
+        initFlowbite: (root?: ParentNode) => void;
         FlowbiteInstances: any;
     }
 }

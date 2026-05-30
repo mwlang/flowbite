@@ -17,21 +17,23 @@ import './components/index';
 import './types/declarations';
 
 // setup events for data attributes
+// Wrap each init in a thunk so the load Event isn't passed positionally
+// as the new optional `root` parameter (would break querySelectorAll at runtime).
 const events = new Events('load', [
-    initAccordions,
-    initCollapses,
-    initCarousels,
-    initDismisses,
-    initDropdowns,
-    initModals,
-    initDrawers,
-    initTabs,
-    initTooltips,
-    initPopovers,
-    initDials,
-    initInputCounters,
-    initCopyClipboards,
-    initDatepickers,
+    () => initAccordions(),
+    () => initCollapses(),
+    () => initCarousels(),
+    () => initDismisses(),
+    () => initDropdowns(),
+    () => initModals(),
+    () => initDrawers(),
+    () => initTabs(),
+    () => initTooltips(),
+    () => initPopovers(),
+    () => initDials(),
+    () => initInputCounters(),
+    () => initCopyClipboards(),
+    () => initDatepickers(),
 ]);
 events.init();
 

@@ -128,56 +128,54 @@ class Collapse implements CollapseInterface {
     }
 }
 
-export function initCollapses() {
-    document
-        .querySelectorAll('[data-collapse-toggle]')
-        .forEach(($triggerEl) => {
-            const targetId = $triggerEl.getAttribute('data-collapse-toggle');
-            const $targetEl = document.getElementById(targetId);
+export function initCollapses(root: ParentNode = document) {
+    root.querySelectorAll('[data-collapse-toggle]').forEach(($triggerEl) => {
+        const targetId = $triggerEl.getAttribute('data-collapse-toggle');
+        const $targetEl = document.getElementById(targetId);
 
-            // check if the target element exists
-            if ($targetEl) {
-                // idempotency: each (trigger, target) pair is bound at most
-                // once. Without this guard the multi-trigger code path below
-                // leaks a fresh Collapse instance with a random-suffix id on
-                // every re-init, since the second branch never deduplicates.
-                if (!markBoundTo($triggerEl, 'collapse-toggle', $targetEl)) {
-                    return;
-                }
-                if (
-                    !instances.instanceExists(
-                        'Collapse',
-                        $targetEl.getAttribute('id')
-                    )
-                ) {
-                    new Collapse(
-                        $targetEl as HTMLElement,
-                        $triggerEl as HTMLElement
-                    );
-                } else {
-                    // Multiple triggers can drive the same collapse target.
-                    // Each additional trigger gets its own Collapse instance
-                    // with a random-suffix id. The markBoundTo guard above
-                    // ensures this only happens once per (trigger, target)
-                    // pair, not on every re-init.
-                    new Collapse(
-                        $targetEl as HTMLElement,
-                        $triggerEl as HTMLElement,
-                        {},
-                        {
-                            id:
-                                $targetEl.getAttribute('id') +
-                                '_' +
-                                instances._generateRandomId(),
-                        }
-                    );
-                }
+        // check if the target element exists
+        if ($targetEl) {
+            // idempotency: each (trigger, target) pair is bound at most
+            // once. Without this guard the multi-trigger code path below
+            // leaks a fresh Collapse instance with a random-suffix id on
+            // every re-init, since the second branch never deduplicates.
+            if (!markBoundTo($triggerEl, 'collapse-toggle', $targetEl)) {
+                return;
+            }
+            if (
+                !instances.instanceExists(
+                    'Collapse',
+                    $targetEl.getAttribute('id')
+                )
+            ) {
+                new Collapse(
+                    $targetEl as HTMLElement,
+                    $triggerEl as HTMLElement
+                );
             } else {
-                console.error(
-                    `The target element with id "${targetId}" does not exist. Please check the data-collapse-toggle attribute.`
+                // Multiple triggers can drive the same collapse target.
+                // Each additional trigger gets its own Collapse instance
+                // with a random-suffix id. The markBoundTo guard above
+                // ensures this only happens once per (trigger, target)
+                // pair, not on every re-init.
+                new Collapse(
+                    $targetEl as HTMLElement,
+                    $triggerEl as HTMLElement,
+                    {},
+                    {
+                        id:
+                            $targetEl.getAttribute('id') +
+                            '_' +
+                            instances._generateRandomId(),
+                    }
                 );
             }
-        });
+        } else {
+            console.error(
+                `The target element with id "${targetId}" does not exist. Please check the data-collapse-toggle attribute.`
+            );
+        }
+    });
 }
 
 if (typeof window !== 'undefined') {

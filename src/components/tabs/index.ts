@@ -135,8 +135,8 @@ class Tabs implements TabsInterface {
     }
 }
 
-export function initTabs() {
-    document.querySelectorAll('[data-tabs-toggle]').forEach(($parentEl) => {
+export function initTabs(root: ParentNode = document) {
+    root.querySelectorAll('[data-tabs-toggle]').forEach(($parentEl) => {
         // idempotency: skip if Tabs already registered for this parent.
         // Constructor's override:true would otherwise rebuild on every
         // re-init, dropping the active-tab state mid-interaction (#796).

@@ -92,8 +92,8 @@ class Dismiss implements DismissInterface {
     }
 }
 
-export function initDismisses() {
-    document.querySelectorAll('[data-dismiss-target]').forEach(($triggerEl) => {
+export function initDismisses(root: ParentNode = document) {
+    root.querySelectorAll('[data-dismiss-target]').forEach(($triggerEl) => {
         const targetId = $triggerEl.getAttribute('data-dismiss-target');
         const $dismissEl = document.querySelector(targetId);
 

@@ -184,8 +184,8 @@ class Dial implements DialInterface {
     }
 }
 
-export function initDials() {
-    document.querySelectorAll('[data-dial-init]').forEach(($parentEl) => {
+export function initDials(root: ParentNode = document) {
+    root.querySelectorAll('[data-dial-init]').forEach(($parentEl) => {
         const $triggerEl = $parentEl.querySelector('[data-dial-toggle]');
 
         if ($triggerEl) {

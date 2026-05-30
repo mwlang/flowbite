@@ -140,10 +140,9 @@ class CopyClipboard implements CopyClipboardInterface {
     }
 }
 
-export function initCopyClipboards() {
-    document
-        .querySelectorAll('[data-copy-to-clipboard-target]')
-        .forEach(($triggerEl) => {
+export function initCopyClipboards(root: ParentNode = document) {
+    root.querySelectorAll('[data-copy-to-clipboard-target]').forEach(
+        ($triggerEl) => {
             const targetId = $triggerEl.getAttribute(
                 'data-copy-to-clipboard-target'
             );
@@ -182,7 +181,8 @@ export function initCopyClipboards() {
                     `The target element with id "${targetId}" does not exist. Please check the data-copy-to-clipboard-target attribute.`
                 );
             }
-        });
+        }
+    );
 }
 
 if (typeof window !== 'undefined') {

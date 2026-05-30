@@ -305,8 +305,8 @@ class Popover implements PopoverInterface {
     }
 }
 
-export function initPopovers() {
-    document.querySelectorAll('[data-popover-target]').forEach(($triggerEl) => {
+export function initPopovers(root: ParentNode = document) {
+    root.querySelectorAll('[data-popover-target]').forEach(($triggerEl) => {
         const popoverID = $triggerEl.getAttribute('data-popover-target');
         const $popoverEl = document.getElementById(popoverID);
 

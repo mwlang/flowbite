@@ -308,8 +308,8 @@ class Carousel implements CarouselInterface {
     }
 }
 
-export function initCarousels() {
-    document.querySelectorAll('[data-carousel]').forEach(($carouselEl) => {
+export function initCarousels(root: ParentNode = document) {
+    root.querySelectorAll('[data-carousel]').forEach(($carouselEl) => {
         // idempotency: skip if a Carousel is already registered for this
         // element. The constructor's override:true would otherwise tear
         // down and rebuild on every re-init, restarting the cycle and

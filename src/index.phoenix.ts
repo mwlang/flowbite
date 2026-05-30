@@ -16,40 +16,29 @@ import Datepicker, { initDatepickers } from './components/datepicker';
 import './components/index';
 import Events from './dom/events';
 
-const liveViewLoadEvents = new Events('phx:page-loading-stop', [
-    initAccordions,
-    initCollapses,
-    initCarousels,
-    initDismisses,
-    initDropdowns,
-    initModals,
-    initDrawers,
-    initTabs,
-    initTooltips,
-    initPopovers,
-    initDials,
-    initInputCounters,
-    initCopyClipboards,
-    initDatepickers,
-]);
+// Wrap each init in a thunk so the Event isn't passed positionally as the
+// new optional `root` parameter (would break querySelectorAll at runtime).
+const initThunks = [
+    () => initAccordions(),
+    () => initCollapses(),
+    () => initCarousels(),
+    () => initDismisses(),
+    () => initDropdowns(),
+    () => initModals(),
+    () => initDrawers(),
+    () => initTabs(),
+    () => initTooltips(),
+    () => initPopovers(),
+    () => initDials(),
+    () => initInputCounters(),
+    () => initCopyClipboards(),
+    () => initDatepickers(),
+];
+
+const liveViewLoadEvents = new Events('phx:page-loading-stop', initThunks);
 liveViewLoadEvents.init();
 
-const regularViewLoadEvents = new Events('load', [
-    initAccordions,
-    initCollapses,
-    initCarousels,
-    initDismisses,
-    initDropdowns,
-    initModals,
-    initDrawers,
-    initTabs,
-    initTooltips,
-    initPopovers,
-    initDials,
-    initInputCounters,
-    initCopyClipboards,
-    initDatepickers,
-]);
+const regularViewLoadEvents = new Events('load', initThunks);
 regularViewLoadEvents.init();
 
 export default {

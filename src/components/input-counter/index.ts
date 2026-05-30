@@ -180,8 +180,8 @@ class InputCounter implements InputCounterInterface {
     }
 }
 
-export function initInputCounters() {
-    document.querySelectorAll('[data-input-counter]').forEach(($targetEl) => {
+export function initInputCounters(root: ParentNode = document) {
+    root.querySelectorAll('[data-input-counter]').forEach(($targetEl) => {
         const targetId = $targetEl.id;
 
         const $incrementEl = document.querySelector(
