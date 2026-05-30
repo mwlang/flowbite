@@ -300,6 +300,12 @@ export function initTooltips() {
         const $tooltipEl = document.getElementById(tooltipId);
 
         if ($tooltipEl) {
+            // idempotency: skip if a Tooltip is already registered for this
+            // target. The constructor's override:true would otherwise tear
+            // down and rebuild on every re-init (#796, #1042).
+            if (instances.instanceExists('Tooltip', $tooltipEl.id)) {
+                return;
+            }
             const triggerType = $triggerEl.getAttribute('data-tooltip-trigger');
             const placement = $triggerEl.getAttribute('data-tooltip-placement');
 

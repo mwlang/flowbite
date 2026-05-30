@@ -98,6 +98,12 @@ export function initDismisses() {
         const $dismissEl = document.querySelector(targetId);
 
         if ($dismissEl) {
+            // idempotency: skip if a Dismiss is already registered for this
+            // target. The constructor's override:true would otherwise tear
+            // down and rebuild on every re-init, stacking transient state.
+            if (instances.instanceExists('Dismiss', $dismissEl.id)) {
+                return;
+            }
             new Dismiss($dismissEl as HTMLElement, $triggerEl as HTMLElement);
         } else {
             console.error(

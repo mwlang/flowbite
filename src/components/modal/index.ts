@@ -3,6 +3,7 @@ import type { ModalOptions } from './types';
 import type { InstanceOptions, EventListenerInstance } from '../../dom/types';
 import { ModalInterface } from './interface';
 import instances from '../../dom/instances';
+import { markBoundTo } from '../../dom/idempotency';
 
 const Default: ModalOptions = {
     placement: 'center',
@@ -285,6 +286,13 @@ export function initModals() {
         const $modalEl = document.getElementById(modalId);
 
         if ($modalEl) {
+            // idempotency: skip if a Modal instance is already registered
+            // for this id. The Modal constructor's override:true default
+            // would otherwise destroy-and-replace, breaking any modal that
+            // happens to be visible at re-init time (#1042).
+            if (instances.instanceExists('Modal', modalId)) {
+                return;
+            }
             const placement = $modalEl.getAttribute('data-modal-placement');
             const backdrop = $modalEl.getAttribute('data-modal-backdrop');
             new Modal(
@@ -313,6 +321,7 @@ export function initModals() {
             );
 
             if (modal) {
+                if (!markBoundTo($triggerEl, 'modal-toggle', modal)) return;
                 const toggleModal = () => {
                     modal.toggle();
                 };
@@ -346,6 +355,7 @@ export function initModals() {
             );
 
             if (modal) {
+                if (!markBoundTo($triggerEl, 'modal-show', modal)) return;
                 const showModal = () => {
                     modal.show();
                 };
@@ -379,6 +389,7 @@ export function initModals() {
             );
 
             if (modal) {
+                if (!markBoundTo($triggerEl, 'modal-hide', modal)) return;
                 const hideModal = () => {
                     modal.hide();
                 };

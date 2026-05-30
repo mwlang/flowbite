@@ -8,6 +8,7 @@ import type { DropdownOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { DropdownInterface } from './interface';
 import instances from '../../dom/instances';
+import { markBoundTo } from '../../dom/idempotency';
 
 const Default: DropdownOptions = {
     placement: 'bottom',
@@ -341,6 +342,15 @@ export function initDropdowns() {
             const $dropdownEl = document.getElementById(dropdownId);
 
             if ($dropdownEl) {
+                // idempotency: each (trigger, panel) pair is bound at most
+                // once. markBoundTo uses owner-aware comparison against the
+                // panel element, so re-runs against unchanged DOM are no-ops
+                // while still allowing multiple distinct triggers to drive
+                // the same panel (current "last trigger wins" semantics
+                // preserved within a single init pass via override:true).
+                if (!markBoundTo($triggerEl, 'dropdown-toggle', $dropdownEl)) {
+                    return;
+                }
                 const placement = $triggerEl.getAttribute(
                     'data-dropdown-placement'
                 );

@@ -193,6 +193,12 @@ export function initDials() {
             const $dialEl = document.getElementById(dialId);
 
             if ($dialEl) {
+                // idempotency: skip if a Dial is already registered for this
+                // target. The constructor's override:true would otherwise tear
+                // down and rebuild on every re-init (#796, #1042).
+                if (instances.instanceExists('Dial', $dialEl.id)) {
+                    return;
+                }
                 const triggerType =
                     $triggerEl.getAttribute('data-dial-trigger');
                 new Dial(

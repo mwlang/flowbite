@@ -3,6 +3,7 @@ import type { DrawerOptions, PlacementClasses } from './types';
 import type { InstanceOptions, EventListenerInstance } from '../../dom/types';
 import { DrawerInterface } from './interface';
 import instances from '../../dom/instances';
+import { markBoundTo } from '../../dom/idempotency';
 
 const Default: DrawerOptions = {
     placement: 'left',
@@ -320,6 +321,12 @@ export function initDrawers() {
         const $drawerEl = document.getElementById(drawerId);
 
         if ($drawerEl) {
+            // idempotency: skip if a Drawer is already registered for this
+            // target. The constructor's override:true would otherwise tear
+            // down and rebuild on every re-init (#796, #1042).
+            if (instances.instanceExists('Drawer', $drawerEl.id)) {
+                return;
+            }
             const placement = $triggerEl.getAttribute('data-drawer-placement');
             const bodyScrolling = $triggerEl.getAttribute(
                 'data-drawer-body-scrolling'
@@ -363,6 +370,7 @@ export function initDrawers() {
             );
 
             if (drawer) {
+                if (!markBoundTo($triggerEl, 'drawer-toggle', drawer)) return;
                 const toggleDrawer = () => {
                     drawer.toggle();
                 };
@@ -399,6 +407,7 @@ export function initDrawers() {
                 );
 
                 if (drawer) {
+                    if (!markBoundTo($triggerEl, 'drawer-hide', drawer)) return;
                     const hideDrawer = () => {
                         drawer.hide();
                     };
@@ -431,6 +440,7 @@ export function initDrawers() {
             );
 
             if (drawer) {
+                if (!markBoundTo($triggerEl, 'drawer-show', drawer)) return;
                 const showDrawer = () => {
                     drawer.show();
                 };

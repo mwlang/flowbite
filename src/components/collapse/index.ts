@@ -3,6 +3,7 @@ import type { CollapseOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { CollapseInterface } from './interface';
 import instances from '../../dom/instances';
+import { markBoundTo } from '../../dom/idempotency';
 
 const Default: CollapseOptions = {
     onCollapse: () => {},
@@ -136,6 +137,13 @@ export function initCollapses() {
 
             // check if the target element exists
             if ($targetEl) {
+                // idempotency: each (trigger, target) pair is bound at most
+                // once. Without this guard the multi-trigger code path below
+                // leaks a fresh Collapse instance with a random-suffix id on
+                // every re-init, since the second branch never deduplicates.
+                if (!markBoundTo($triggerEl, 'collapse-toggle', $targetEl)) {
+                    return;
+                }
                 if (
                     !instances.instanceExists(
                         'Collapse',
@@ -147,7 +155,11 @@ export function initCollapses() {
                         $triggerEl as HTMLElement
                     );
                 } else {
-                    // if instance exists already for the same target element then create a new one with a different trigger element
+                    // Multiple triggers can drive the same collapse target.
+                    // Each additional trigger gets its own Collapse instance
+                    // with a random-suffix id. The markBoundTo guard above
+                    // ensures this only happens once per (trigger, target)
+                    // pair, not on every re-init.
                     new Collapse(
                         $targetEl as HTMLElement,
                         $triggerEl as HTMLElement,

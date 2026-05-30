@@ -311,6 +311,12 @@ export function initPopovers() {
         const $popoverEl = document.getElementById(popoverID);
 
         if ($popoverEl) {
+            // idempotency: skip if a Popover is already registered for this
+            // target. The constructor's override:true would otherwise tear
+            // down and rebuild on every re-init (#796, #1042).
+            if (instances.instanceExists('Popover', $popoverEl.id)) {
+                return;
+            }
             const triggerType = $triggerEl.getAttribute('data-popover-trigger');
             const placement = $triggerEl.getAttribute('data-popover-placement');
             const offset = $triggerEl.getAttribute('data-popover-offset');

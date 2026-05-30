@@ -199,6 +199,12 @@ export function initDatepickers() {
         )
         .forEach(($datepickerEl) => {
             if ($datepickerEl) {
+                // idempotency: skip if a Datepicker is already registered for
+                // this element. The constructor's override:true would otherwise
+                // tear down and rebuild on every re-init (#796, #1042).
+                if (instances.instanceExists('Datepicker', $datepickerEl.id)) {
+                    return;
+                }
                 const buttons =
                     $datepickerEl.hasAttribute('datepicker-buttons');
                 const autoselectToday = $datepickerEl.hasAttribute(
