@@ -59,9 +59,11 @@ function destroyInstancesIn(node: Node): void {
             // Component instances use different private field names for
             // their root element across the suite (_targetEl on most,
             // _accordionEl on Accordion, _tabsEl on Tabs, _datepickerEl
-            // on Datepicker, _parentEl on Dial). Read them dynamically.
+            // on Datepicker, _parentEl on Dial, _carouselEl on Carousel).
+            // Read them dynamically.
             const inst = bucket[id] as unknown as Record<string, unknown>;
             const el = (inst._targetEl ||
+                inst._carouselEl ||
                 inst._accordionEl ||
                 inst._tabsEl ||
                 inst._datepickerEl ||
