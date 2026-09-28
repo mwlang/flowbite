@@ -4,6 +4,7 @@ import type { InstanceOptions, EventListenerInstance } from '../../dom/types';
 import { DrawerInterface } from './interface';
 import instances from '../../dom/instances';
 import { markBoundTo } from '../../dom/idempotency';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: DrawerOptions = {
     placement: 'left',
@@ -315,7 +316,7 @@ class Drawer implements DrawerInterface {
 }
 
 export function initDrawers(root: ParentNode = document) {
-    root.querySelectorAll('[data-drawer-target]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-drawer-target]').forEach(($triggerEl) => {
         // mandatory
         const drawerId = $triggerEl.getAttribute('data-drawer-target');
         const $drawerEl = document.getElementById(drawerId);
@@ -359,7 +360,7 @@ export function initDrawers(root: ParentNode = document) {
         }
     });
 
-    root.querySelectorAll('[data-drawer-toggle]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-drawer-toggle]').forEach(($triggerEl) => {
         const drawerId = $triggerEl.getAttribute('data-drawer-toggle');
         const $drawerEl = document.getElementById(drawerId);
 
@@ -392,44 +393,45 @@ export function initDrawers(root: ParentNode = document) {
         }
     });
 
-    root.querySelectorAll('[data-drawer-dismiss], [data-drawer-hide]').forEach(
-        ($triggerEl) => {
-            const drawerId = $triggerEl.getAttribute('data-drawer-dismiss')
-                ? $triggerEl.getAttribute('data-drawer-dismiss')
-                : $triggerEl.getAttribute('data-drawer-hide');
-            const $drawerEl = document.getElementById(drawerId);
+    queryIncludingSelf(
+        root,
+        '[data-drawer-dismiss], [data-drawer-hide]'
+    ).forEach(($triggerEl) => {
+        const drawerId = $triggerEl.getAttribute('data-drawer-dismiss')
+            ? $triggerEl.getAttribute('data-drawer-dismiss')
+            : $triggerEl.getAttribute('data-drawer-hide');
+        const $drawerEl = document.getElementById(drawerId);
 
-            if ($drawerEl) {
-                const drawer: DrawerInterface = instances.getInstance(
-                    'Drawer',
-                    drawerId
+        if ($drawerEl) {
+            const drawer: DrawerInterface = instances.getInstance(
+                'Drawer',
+                drawerId
+            );
+
+            if (drawer) {
+                if (!markBoundTo($triggerEl, 'drawer-hide', drawer)) return;
+                const hideDrawer = () => {
+                    drawer.hide();
+                };
+                $triggerEl.addEventListener('click', hideDrawer);
+                drawer.addEventListenerInstance(
+                    $triggerEl as HTMLElement,
+                    'click',
+                    hideDrawer
                 );
-
-                if (drawer) {
-                    if (!markBoundTo($triggerEl, 'drawer-hide', drawer)) return;
-                    const hideDrawer = () => {
-                        drawer.hide();
-                    };
-                    $triggerEl.addEventListener('click', hideDrawer);
-                    drawer.addEventListenerInstance(
-                        $triggerEl as HTMLElement,
-                        'click',
-                        hideDrawer
-                    );
-                } else {
-                    console.error(
-                        `Drawer with id ${drawerId} has not been initialized. Please initialize it using the data-drawer-target attribute.`
-                    );
-                }
             } else {
                 console.error(
-                    `Drawer with id ${drawerId} not found. Are you sure that the data-drawer-target attribute points to the correct drawer id`
+                    `Drawer with id ${drawerId} has not been initialized. Please initialize it using the data-drawer-target attribute.`
                 );
             }
+        } else {
+            console.error(
+                `Drawer with id ${drawerId} not found. Are you sure that the data-drawer-target attribute points to the correct drawer id`
+            );
         }
-    );
+    });
 
-    root.querySelectorAll('[data-drawer-show]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-drawer-show]').forEach(($triggerEl) => {
         const drawerId = $triggerEl.getAttribute('data-drawer-show');
         const $drawerEl = document.getElementById(drawerId);
 

@@ -4,6 +4,7 @@ import type { DatepickerOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { DatepickerInterface } from './interface';
 import instances from '../../dom/instances';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 import {
     Datepicker as FlowbiteDatepicker,
@@ -193,7 +194,8 @@ class Datepicker implements DatepickerInterface {
 }
 
 export function initDatepickers(root: ParentNode = document) {
-    root.querySelectorAll(
+    queryIncludingSelf(
+        root,
         '[datepicker], [inline-datepicker], [date-rangepicker]'
     ).forEach(($datepickerEl) => {
         if ($datepickerEl) {

@@ -3,6 +3,7 @@ import type { DialOptions, DialTriggerType } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { DialInterface } from './interface';
 import instances from '../../dom/instances';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: DialOptions = {
     triggerType: 'hover',
@@ -185,7 +186,7 @@ class Dial implements DialInterface {
 }
 
 export function initDials(root: ParentNode = document) {
-    root.querySelectorAll('[data-dial-init]').forEach(($parentEl) => {
+    queryIncludingSelf(root, '[data-dial-init]').forEach(($parentEl) => {
         const $triggerEl = $parentEl.querySelector('[data-dial-toggle]');
 
         if ($triggerEl) {

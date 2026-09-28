@@ -3,6 +3,7 @@ import type { InputCounterOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { InputCounterInterface } from './interface';
 import instances from '../../dom/instances';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: InputCounterOptions = {
     minValue: null,
@@ -181,7 +182,7 @@ class InputCounter implements InputCounterInterface {
 }
 
 export function initInputCounters(root: ParentNode = document) {
-    root.querySelectorAll('[data-input-counter]').forEach(($targetEl) => {
+    queryIncludingSelf(root, '[data-input-counter]').forEach(($targetEl) => {
         const targetId = $targetEl.id;
 
         const $incrementEl = document.querySelector(

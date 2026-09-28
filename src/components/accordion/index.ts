@@ -3,6 +3,7 @@ import type { AccordionItem, AccordionOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { AccordionInterface } from './interface';
 import instances from '../../dom/instances';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: AccordionOptions = {
     alwaysOpen: false,
@@ -186,7 +187,7 @@ class Accordion implements AccordionInterface {
 }
 
 export function initAccordions(root: ParentNode = document) {
-    root.querySelectorAll('[data-accordion]').forEach(($accordionEl) => {
+    queryIncludingSelf(root, '[data-accordion]').forEach(($accordionEl) => {
         // idempotency: skip if this accordion is already registered. Without
         // this, re-running initAccordions() in a Turbo context tears down the
         // existing instance (override:true default) and silently loses any

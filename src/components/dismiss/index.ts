@@ -3,6 +3,7 @@ import type { DismissOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { DismissInterface } from './interface';
 import instances from '../../dom/instances';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: DismissOptions = {
     transition: 'transition-opacity',
@@ -93,7 +94,7 @@ class Dismiss implements DismissInterface {
 }
 
 export function initDismisses(root: ParentNode = document) {
-    root.querySelectorAll('[data-dismiss-target]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-dismiss-target]').forEach(($triggerEl) => {
         const targetId = $triggerEl.getAttribute('data-dismiss-target');
         const $dismissEl = document.querySelector(targetId);
 

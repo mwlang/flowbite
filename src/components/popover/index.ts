@@ -8,6 +8,7 @@ import type { PopoverOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { PopoverInterface } from './interface';
 import instances from '../../dom/instances';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: PopoverOptions = {
     placement: 'top',
@@ -306,7 +307,7 @@ class Popover implements PopoverInterface {
 }
 
 export function initPopovers(root: ParentNode = document) {
-    root.querySelectorAll('[data-popover-target]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-popover-target]').forEach(($triggerEl) => {
         const popoverID = $triggerEl.getAttribute('data-popover-target');
         const $popoverEl = document.getElementById(popoverID);
 

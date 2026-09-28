@@ -9,6 +9,7 @@ import type { InstanceOptions } from '../../dom/types';
 import { DropdownInterface } from './interface';
 import instances from '../../dom/instances';
 import { markBoundTo } from '../../dom/idempotency';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: DropdownOptions = {
     placement: 'bottom',
@@ -335,7 +336,7 @@ class Dropdown implements DropdownInterface {
 }
 
 export function initDropdowns(root: ParentNode = document) {
-    root.querySelectorAll('[data-dropdown-toggle]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-dropdown-toggle]').forEach(($triggerEl) => {
         const dropdownId = $triggerEl.getAttribute('data-dropdown-toggle');
         const $dropdownEl = document.getElementById(dropdownId);
 

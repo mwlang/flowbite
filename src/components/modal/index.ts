@@ -4,6 +4,7 @@ import type { InstanceOptions, EventListenerInstance } from '../../dom/types';
 import { ModalInterface } from './interface';
 import instances from '../../dom/instances';
 import { markBoundTo } from '../../dom/idempotency';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: ModalOptions = {
     placement: 'center',
@@ -281,7 +282,7 @@ class Modal implements ModalInterface {
 
 export function initModals(root: ParentNode = document) {
     // initiate modal based on data-modal-target
-    root.querySelectorAll('[data-modal-target]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-modal-target]').forEach(($triggerEl) => {
         const modalId = $triggerEl.getAttribute('data-modal-target');
         const $modalEl = document.getElementById(modalId);
 
@@ -310,7 +311,7 @@ export function initModals(root: ParentNode = document) {
     });
 
     // toggle modal visibility
-    root.querySelectorAll('[data-modal-toggle]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-modal-toggle]').forEach(($triggerEl) => {
         const modalId = $triggerEl.getAttribute('data-modal-toggle');
         const $modalEl = document.getElementById(modalId);
 
@@ -344,7 +345,7 @@ export function initModals(root: ParentNode = document) {
     });
 
     // show modal on click if exists based on id
-    root.querySelectorAll('[data-modal-show]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-modal-show]').forEach(($triggerEl) => {
         const modalId = $triggerEl.getAttribute('data-modal-show');
         const $modalEl = document.getElementById(modalId);
 
@@ -378,7 +379,7 @@ export function initModals(root: ParentNode = document) {
     });
 
     // hide modal on click if exists based on id
-    root.querySelectorAll('[data-modal-hide]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-modal-hide]').forEach(($triggerEl) => {
         const modalId = $triggerEl.getAttribute('data-modal-hide');
         const $modalEl = document.getElementById(modalId);
 

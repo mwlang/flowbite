@@ -8,6 +8,7 @@ import type { TooltipOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { TooltipInterface } from './interface';
 import instances from '../../dom/instances';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: TooltipOptions = {
     placement: 'top',
@@ -295,7 +296,7 @@ class Tooltip implements TooltipInterface {
 }
 
 export function initTooltips(root: ParentNode = document) {
-    root.querySelectorAll('[data-tooltip-target]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-tooltip-target]').forEach(($triggerEl) => {
         const tooltipId = $triggerEl.getAttribute('data-tooltip-target');
         const $tooltipEl = document.getElementById(tooltipId);
 

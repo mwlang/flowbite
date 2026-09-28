@@ -3,6 +3,7 @@ import type { CopyClipboardOptions } from './types';
 import type { InstanceOptions } from '../../dom/types';
 import { CopyClipboardInterface } from './interface';
 import instances from '../../dom/instances';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: CopyClipboardOptions = {
     htmlEntities: false,
@@ -141,7 +142,7 @@ class CopyClipboard implements CopyClipboardInterface {
 }
 
 export function initCopyClipboards(root: ParentNode = document) {
-    root.querySelectorAll('[data-copy-to-clipboard-target]').forEach(
+    queryIncludingSelf(root, '[data-copy-to-clipboard-target]').forEach(
         ($triggerEl) => {
             const targetId = $triggerEl.getAttribute(
                 'data-copy-to-clipboard-target'

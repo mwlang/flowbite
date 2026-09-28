@@ -4,6 +4,7 @@ import type { InstanceOptions } from '../../dom/types';
 import { CollapseInterface } from './interface';
 import instances from '../../dom/instances';
 import { markBoundTo } from '../../dom/idempotency';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: CollapseOptions = {
     onCollapse: () => {},
@@ -129,7 +130,7 @@ class Collapse implements CollapseInterface {
 }
 
 export function initCollapses(root: ParentNode = document) {
-    root.querySelectorAll('[data-collapse-toggle]').forEach(($triggerEl) => {
+    queryIncludingSelf(root, '[data-collapse-toggle]').forEach(($triggerEl) => {
         const targetId = $triggerEl.getAttribute('data-collapse-toggle');
         const $targetEl = document.getElementById(targetId);
 

@@ -8,6 +8,7 @@ import type {
 import type { InstanceOptions } from '../../dom/types';
 import { CarouselInterface } from './interface';
 import instances from '../../dom/instances';
+import { queryIncludingSelf } from '../../dom/query-all';
 
 const Default: CarouselOptions = {
     defaultPosition: 0,
@@ -309,7 +310,7 @@ class Carousel implements CarouselInterface {
 }
 
 export function initCarousels(root: ParentNode = document) {
-    root.querySelectorAll('[data-carousel]').forEach(($carouselEl) => {
+    queryIncludingSelf(root, '[data-carousel]').forEach(($carouselEl) => {
         // idempotency: skip if a Carousel is already registered for this
         // element. The constructor's override:true would otherwise tear
         // down and rebuild on every re-init, restarting the cycle and
