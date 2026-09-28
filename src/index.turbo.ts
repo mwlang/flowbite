@@ -27,11 +27,15 @@ import Events from './dom/events';
  * dropping mid-interaction state — see #1042) and under-reaching (DOM
  * injected outside Turbo's lifecycle was never picked up — see #1123).
  *
- * The new strategy: a single `MutationObserver` on `document.body`
+ * The new strategy: a single `MutationObserver` on `document.documentElement`
  * (`startAutoInit`) detects every DOM mutation and tears down /
  * initializes components in the affected subtrees only. Framework-
  * agnostic — also handles Phoenix LiveView, Next.js navigations,
- * vanilla innerHTML, etc.
+ * vanilla innerHTML, etc. Watching `documentElement` rather than `body`
+ * matters here specifically: a standard Turbo Drive visit replaces the
+ * whole `<body>` element rather than morphing its children, and
+ * `<html>` is the nearest ancestor guaranteed to survive that — see
+ * `startAutoInit`'s doc comment in `dom/auto-init.ts`.
  *
  * `initFlowbite()` still runs once at startup for components present
  * in the initial server-rendered HTML.
@@ -42,7 +46,7 @@ import Events from './dom/events';
 
 const start = () => {
     initFlowbite();
-    startAutoInit(document.body);
+    startAutoInit(document.documentElement);
 };
 
 if (typeof document !== 'undefined') {

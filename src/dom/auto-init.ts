@@ -87,12 +87,24 @@ function initInstancesIn(node: Node): void {
 }
 
 /**
- * Start observing DOM mutations on `root` (default: `document.body`)
+ * Start observing DOM mutations on `root` (default: `document.documentElement`)
  * and keep Flowbite components in sync with the DOM. Calls are
  * idempotent — starting twice with the same root is a no-op; starting
  * with a different root reconnects to the new root.
+ *
+ * Defaults to `documentElement`, not `body`: a standard Turbo Drive
+ * visit replaces the whole `<body>` element wholesale
+ * (`document.body.replaceWith(newElement)` in Turbo's `PageRenderer`),
+ * it doesn't morph its children. An observer bound to the old `<body>`
+ * would be left watching a detached node with no way to know a new one
+ * took its place. `<html>` itself is never replaced by Turbo (or by any
+ * other framework this needs to support), so watching it with
+ * `subtree: true` sees the body swap as just another childList
+ * mutation — no framework-specific event needed to detect it.
  */
-export function startAutoInit(root: ParentNode = document.body): void {
+export function startAutoInit(
+    root: ParentNode = document.documentElement
+): void {
     if (observer && observedRoot === root) return;
     if (observer) stopAutoInit();
 
